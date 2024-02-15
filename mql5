@@ -1,0 +1,93 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                           Incantation AI MT4     |
+//|                                 https://www.forexroboteasy.com   |
+//|                                          Forex Robot Easy Team    |
+//+------------------------------------------------------------------+
+
+// Global variables
+int stopLoss = 100; // Stop loss in pips
+int takeProfit = 200; // Take profit in pips
+double riskPercentage = 0.02; // Risk percentage per trade
+int magicNumber = 12345; // Magic number to identify trades
+int slippage = 3; // Maximum allowed slippage in pips
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Attach the EA to the necessary charts and timeframes
+    Attach('EURUSD', PERIOD_H1);
+    Attach('GBPUSD', PERIOD_H1);
+    Attach('USDJPY', PERIOD_H1);
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Detach the EA from all attached charts and timeframes
+    DetachAll();
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check for new trade opportunities
+    if (IsNewTradeOpportunity())
+    {
+        // Open a new trade based on the sniper entry system
+        OpenTrade();
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Check for new trade opportunities                                |
+//+------------------------------------------------------------------+
+bool IsNewTradeOpportunity()
+{
+    // Add your trade opportunity conditions here
+    // For example, you can check for specific indicators or patterns
+    
+    return true; // Return true if a new trade opportunity is identified
+}
+
+//+------------------------------------------------------------------+
+//| Open a new trade based on the sniper entry system                 |
+//+------------------------------------------------------------------+
+void OpenTrade()
+{
+    // Calculate lot size based on risk percentage
+    double lotSize = AccountBalance() * riskPercentage / 100 / stopLoss / MarketInfo(Symbol(), MODE_TICKVALUE);
+    
+    // Set stop loss and take profit levels
+    double stopLossLevel = NormalizeDouble(Bid - stopLoss * Point, Digits);
+    double takeProfitLevel = NormalizeDouble(Bid + takeProfit * Point, Digits);
+    
+    // Open a buy trade
+    int ticket = OrderSend(Symbol(), OP_BUY, lotSize, Bid, slippage, stopLossLevel, takeProfitLevel, 'Buy Order', magicNumber, 0, clrBlue);
+    
+    // Check for trade execution success
+    if (ticket > 0)
+    {
+        Print('Buy order placed successfully. Ticket: ', ticket);
+    }
+    else
+    {
+        Print('Failed to place buy order. Error code: ', GetLastError());
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Normalize a double value to a specified number of decimal places  |
+//+------------------------------------------------------------------+
+double NormalizeDouble(const double value, const int digits)
+{
+    return (MathRound(value * MathPow(10, digits))) / MathPow(10, digits);
+}
